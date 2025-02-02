@@ -142,15 +142,11 @@ async function updateNotionPage(pageId, imageUrl) {
  * @param {import('http').ServerResponse} res - The outgoing response.
  */
 module.exports = async (req, res) => {
-  // Allow only POST requests.
-  if (req.method !== 'POST') {
-    res.writeHead(405, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ error: 'Method not allowed' }));
-  }
-
   try {
     // Assume the request body is already parsed as JSON.
-    const { notionPageId, linkedInUrl } = req.body;
+    const notionPageId = req.body?.data?.id;
+    const page = await notion.pages.retrieve({ page_id: notionPageId });
+    const linkedInUrl = page?.properties;
 
     if (!notionPageId || !linkedInUrl) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
