@@ -2,22 +2,26 @@
  * updateNotionProfileFromLinkedIn.js
  *
  * Combines functionality to:
- *  1. Fetch a LinkedIn profile image using Puppeteer with stealth mode.
- *  2. Update a Notion page's icon and cover using the Notion API.
- *  3. Serve as a serverless function (e.g., for Vercel) that accepts a POST request.
+ *   1. Fetch a LinkedIn profile image using Puppeteer with stealth mode.
+ *   2. Update a Notion page's icon and cover using the Notion API.
+ *   3. Serve as a serverless function (e.g., for Vercel) that accepts a POST request.
  *
  * Environment variables:
- *  - NOTION_API_KEY: Your Notion API integration token.
- *  - LINKEDIN_COOKIES: A JSON string of cookies exported from your browser.
+ *   - NOTION_API_KEY: Your Notion API integration token.
+ *   - LINKEDIN_COOKIES: A JSON string of cookies exported from your browser.
+ *
+ * IMPORTANT:
+ *   The error about "libnss3.so" indicates that your serverless runtime is missing
+ *   OS-level dependencies needed by Chromium. On Vercel, you can fix this by deploying
+ *   your function in a custom Docker container (see Dockerfile example below).
  */
 
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { Client } = require('@notionhq/client');
-
 const chromium = require('chrome-aws-lambda');
-const puppeteer = require('puppeteer-extra');
 
+// Load stealth evasions (all required evasions remain unchanged)
 require('puppeteer-extra-plugin-stealth/evasions/chrome.app');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.csi');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes');
@@ -35,6 +39,7 @@ require('puppeteer-extra-plugin-stealth/evasions/sourceurl');
 require('puppeteer-extra-plugin-stealth/evasions/user-agent-override');
 require('puppeteer-extra-plugin-stealth/evasions/webgl.vendor');
 require('puppeteer-extra-plugin-stealth/evasions/window.outerdimensions');
+
 require('puppeteer-extra-plugin-user-preferences');
 require('puppeteer-extra-plugin-user-data-dir');
 
@@ -63,7 +68,6 @@ async function loadCookies(page) {
     throw new Error('Failed to parse LINKEDIN_COOKIES environment variable as JSON.');
   }
 
-  // Set each cookie on the Puppeteer page.
   for (const cookie of cookies) {
     await page.setCookie(cookie);
   }
@@ -71,7 +75,6 @@ async function loadCookies(page) {
 
 /**
  * Fetch the LinkedIn profile image URL.
- * This function relies on cookies for authentication.
  *
  * @param {string} profileUrl - The LinkedIn profile URL.
  * @returns {Promise<string|null>} - The profile image URL, or null if not found.
@@ -80,7 +83,13 @@ async function fetchLinkedInProfileImage(profileUrl) {
   let browser;
   try {
     browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [
+        ...chromium.args,
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
+      ],
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath,
       headless: chromium.headless,
@@ -94,7 +103,7 @@ async function fetchLinkedInProfileImage(profileUrl) {
     );
     await page.setViewport({ width: 1280, height: 800 });
 
-    // Load cookies to maintain the LinkedIn session.
+    // Load cookies for authentication.
     await loadCookies(page);
 
     console.log(`Navigating to LinkedIn profile: ${profileUrl}`);
@@ -156,9 +165,12 @@ async function updateNotionPage(pageId, imageUrl) {
 
 /**
  * Serverless function handler.
+ *
  * Expects a JSON body with:
- *  - notionPageId: The ID of the Notion page to update.
- *  - linkedInUrl: The LinkedIn profile URL.
+ *   - notionPageId: The ID of the Notion page to update.
+ *
+ * The Notion page is expected to have a URL property (e.g., page.properties.URL.url)
+ * containing the LinkedIn profile URL.
  *
  * Responds with the fetched image URL on success.
  *
