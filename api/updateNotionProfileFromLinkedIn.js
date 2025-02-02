@@ -14,7 +14,9 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { Client } = require('@notionhq/client');
+
 require('puppeteer-extra-plugin-stealth/evasions/chrome.app');
+require('puppeteer-extra-plugin-stealth/evasions/chrome.csi');
 
 
 // Enable stealth mode for puppeteer.
