@@ -15,13 +15,28 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { Client } = require('@notionhq/client');
 
-require('puppeteer-extra-plugin-stealth/evasions');
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-extra');
+
 require('puppeteer-extra-plugin-stealth/evasions/chrome.app');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.csi');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.runtime');
 require('puppeteer-extra-plugin-stealth/evasions/defaultArgs');
-
+require('puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow');
+require('puppeteer-extra-plugin-stealth/evasions/media.codecs');
+require('puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency');
+require('puppeteer-extra-plugin-stealth/evasions/navigator.languages');
+require('puppeteer-extra-plugin-stealth/evasions/navigator.permissions');
+require('puppeteer-extra-plugin-stealth/evasions/navigator.plugins');
+require('puppeteer-extra-plugin-stealth/evasions/navigator.vendor');
+require('puppeteer-extra-plugin-stealth/evasions/navigator.webdriver');
+require('puppeteer-extra-plugin-stealth/evasions/sourceurl');
+require('puppeteer-extra-plugin-stealth/evasions/user-agent-override');
+require('puppeteer-extra-plugin-stealth/evasions/webgl.vendor');
+require('puppeteer-extra-plugin-stealth/evasions/window.outerdimensions');
+require('puppeteer-extra-plugin-user-preferences');
+require('puppeteer-extra-plugin-user-data-dir');
 
 // Enable stealth mode for puppeteer.
 puppeteer.use(StealthPlugin());
@@ -65,8 +80,10 @@ async function fetchLinkedInProfileImage(profileUrl) {
   let browser;
   try {
     browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
@@ -153,7 +170,7 @@ module.exports = async (req, res) => {
     // Assume the request body is already parsed as JSON.
     const notionPageId = req.body?.data?.id;
     const page = await notion.pages.retrieve({ page_id: notionPageId });
-    const linkedInUrl = page?.properties;
+    const linkedInUrl = page?.properties?.URL?.url;
 
     if (!notionPageId || !linkedInUrl) {
       res.writeHead(400, { 'Content-Type': 'application/json' });

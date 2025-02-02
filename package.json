@@ -5,6 +5,7 @@
   "license": "ISC",
   "dependencies": {
     "@notionhq/client": "^2.2.15",
+    "chrome-aws-lambda": "^9.1.0",
     "puppeteer": "^24.1.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
