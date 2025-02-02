@@ -13,14 +13,6 @@
  *  - A valid cookies.json file in the same directory (exported from your browser) for LinkedIn authentication.
  */
 
-// Force the inclusion of the chrome evasions modules.
-try {
-  require('puppeteer-extra-plugin-stealth/evasions/chrome/app');
-  require('puppeteer-extra-plugin-stealth/evasions/chrome/runtime');
-} catch (err) {
-  console.warn('Failed to load a chrome evasion module:', err);
-}
-
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
