@@ -1,7 +1,5 @@
-// api/updateLinkedInProfile.js
-require('dotenv').config(); // Load env variables if running locally
-const fetchLinkedInProfileImage = require('../fetchLinkedInProfileImage');
-const updateNotionPage = require('../updateNotionPage');
+const fetchLinkedInProfileImage = require('./fetchLinkedInProfileImage');
+const updateNotionPage = require('./updateNotionPage');
 
 /**
  * Vercel serverless function handler.
@@ -15,14 +13,14 @@ module.exports = async (req, res) => {
   }
 
   try {
+    console.log('Received webhook payload:', req.body);
+
     // Parse the incoming JSON body
     const { notionPageId, linkedInUrl } = req.body;
 
     if (!notionPageId || !linkedInUrl) {
       return res.status(400).json({ error: 'Missing notionPageId or linkedInUrl in request body' });
     }
-
-    console.log('Received webhook payload:', req.body);
     
     // Step 1: Fetch the LinkedIn profile image URL.
     const imageUrl = await fetchLinkedInProfileImage(linkedInUrl);
