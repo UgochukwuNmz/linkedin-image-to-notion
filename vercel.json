@@ -1,0 +1,10 @@
+{
+    "functions": {
+      "api/updateNotionProfileFromLinkedIn.js": {
+        "externalModules": [
+          "puppeteer-extra-plugin-stealth/evasions/chrome.app"
+        ]
+      }
+    }
+}
+  

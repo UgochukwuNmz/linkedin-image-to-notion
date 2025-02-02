@@ -13,13 +13,6 @@
  *  - A valid cookies.json file in the same directory (exported from your browser) for LinkedIn authentication.
  */
 
-// Force static import of the evasions module so that it is bundled correctly by Vercel.
-try {
-  require('puppeteer-extra-plugin-stealth/evasions/chrome.app');
-} catch (e) {
-  console.warn('Warning: Could not load chrome.app evasion module. It may already be included or not needed:', e);
-}
-
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
