@@ -1,10 +1,7 @@
 {
-    "functions": {
-      "api/updateNotionProfileFromLinkedIn.js": {
-        "externalModules": [
-          "puppeteer-extra-plugin-stealth/evasions/chrome.app"
-        ]
-      }
+  "functions": {
+    "api/updateNotionProfileFromLinkedIn.js": {
+      "bundle": false
     }
+  }
 }
-  
