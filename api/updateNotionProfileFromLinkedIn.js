@@ -19,7 +19,6 @@ require('puppeteer-extra-plugin-stealth/evasions/chrome.app');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.csi');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes');
 require('puppeteer-extra-plugin-stealth/evasions/chrome.runtime');
-require('puppeteer-extra-plugin-stealth/evasions/chrome.*');
 
 
 // Enable stealth mode for puppeteer.
