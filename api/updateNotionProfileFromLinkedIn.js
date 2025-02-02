@@ -8,18 +8,13 @@
  *
  * Environment variables:
  *  - NOTION_API_KEY: Your Notion API integration token.
- *
- * Prerequisites:
- *  - A valid cookies.json file in the same directory (exported from your browser) for LinkedIn authentication.
+ *  - LINKEDIN_COOKIES: A JSON string of cookies exported from your browser.
  */
 
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const fs = require('fs');
-const path = require('path');
 const { Client } = require('@notionhq/client');
 
-const COOKIES_PATH = path.join(__dirname, 'cookies.json');
 
 // Enable stealth mode for puppeteer.
 puppeteer.use(StealthPlugin());
@@ -28,21 +23,27 @@ puppeteer.use(StealthPlugin());
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
 /**
- * Load cookies from file into the provided Puppeteer page.
+ * Load cookies into the provided Puppeteer page using the LINKEDIN_COOKIES environment variable.
+ *
  * @param {import('puppeteer').Page} page - The Puppeteer page instance.
- * @throws Will throw an error if the cookies file does not exist.
+ * @throws Will throw an error if the LINKEDIN_COOKIES variable is not set or cannot be parsed.
  */
 async function loadCookies(page) {
-  if (fs.existsSync(COOKIES_PATH)) {
-    const cookiesString = fs.readFileSync(COOKIES_PATH);
-    const cookies = JSON.parse(cookiesString);
-    for (const cookie of cookies) {
-      await page.setCookie(cookie);
-    }
-    console.log('Cookies loaded from file.');
-  } else {
-    // Throw an error if cookies file is missing.
-    throw new Error('No cookies file found. Please export your cookies from your browser.');
+  if (!process.env.LINKEDIN_COOKIES) {
+    throw new Error('LINKEDIN_COOKIES environment variable is not set.');
+  }
+
+  let cookies;
+  try {
+    cookies = JSON.parse(process.env.LINKEDIN_COOKIES);
+    console.log('Cookies loaded from environment variable.');
+  } catch (error) {
+    throw new Error('Failed to parse LINKEDIN_COOKIES environment variable as JSON.');
+  }
+
+  // Set each cookie on the Puppeteer page.
+  for (const cookie of cookies) {
+    await page.setCookie(cookie);
   }
 }
 
@@ -57,7 +58,7 @@ async function fetchLinkedInProfileImage(profileUrl) {
   let browser;
   try {
     browser = await puppeteer.launch({
-      headless: false, // Set to true in production.
+      headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
